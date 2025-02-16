@@ -1,6 +1,12 @@
 package diffie_hellman;
 import java.util.*;
 public class difhel{
+
+    //predefined alpha and q values, and are publicly known 
+    public static int q = 353, alpha = 3;
+    public static int YAlice, YBob, YDarth;
+    public static int XAlice, XBob, XDarth;
+
     public static int fastExponen(int base, int pow, int n){
 
         //Convert the power into the binary form
@@ -14,7 +20,7 @@ public class difhel{
             }
          }//outer for end
 
-        System.out.println("The value of the modular exponentiation is: " + f);
+        //System.out.println("The value of the modular exponentiation is: " + f);
         return f;
 
     }//method end
@@ -22,16 +28,19 @@ public class difhel{
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Enter the base: ");
-        int base = sc.nextInt();
+        //Get the public key values of the three people from the user
+        System.out.println("Enter the private key values of Alice, Bob and Darth Vader: ");
+        XAlice = sc.nextInt();
+        XBob = sc.nextInt();
+        XDarth = sc.nextInt();
 
-        System.out.println("Enter the power: ");
-        int pow = sc.nextInt();
+        //Calculate the public key values of Alice, Bob and Darth Vader
+        YAlice = fastExponen(alpha, XAlice, q);
+        YBob = fastExponen(alpha, XBob, q);
+        YDarth = fastExponen(alpha, XDarth, q);
 
-        System.out.println("Enter the modulus: ");
-        int n = sc.nextInt();
+        //Man-In-Middle Attack done by Darth
 
-        fastExponen(base, pow, n);
 
         sc.close();
     }//main end

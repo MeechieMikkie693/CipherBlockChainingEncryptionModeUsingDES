@@ -14,7 +14,7 @@ public class descbc {
         return text + "X".repeat(paddingNeeded);
     }//method end 
 
-    public static String cbc_Encrypt(String plaintext){
+    public static String cbc_Encrypt(String plaintext, String masterkey){
          plaintext = ensureMultipleOf8(plaintext);
          String operand = trial.initialTextMut(iv);
          StringBuilder cipherTexts = new StringBuilder();
@@ -31,7 +31,7 @@ public class descbc {
             String sxor = trial.xorStrings(trial.initialTextMut(text), operand);
 
             //Perform encryption on the XOR-ed output
-            String cipher = trial.encryption(sxor);
+            String cipher = trial.encryption(sxor, masterkey);
             //Binary strings(encrpyted text) are stored in the cipherTexts list(so must by of 64 bit sized blocks of encrypted (binary string) message)
             cipherTexts.append(cipher);
 
@@ -42,7 +42,7 @@ public class descbc {
          return cipherTexts.toString();
     }//method end
 
-     public static String cbc_decrypt(String ciphertext){
+     public static String cbc_decrypt(String ciphertext, String masterKey){
 
         String operand = trial.initialTextMut(iv);
         StringBuilder plainTexts = new StringBuilder();
@@ -53,7 +53,7 @@ public class descbc {
             String cipher = ciphertext.substring(i, i+64);
 
             //decrypt the ciphered text
-            String output = trial.decryption(cipher);
+            String output = trial.decryption(cipher, masterKey);
 
             //Perform the xor operation with the cipher text and iv(initially, will be later replaced with cipher text from previous decryption)
             String text = trial.xorStrings(operand, output);

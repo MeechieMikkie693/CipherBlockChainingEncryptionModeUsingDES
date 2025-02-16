@@ -320,12 +320,14 @@ public class trial{
             }//for end*/
    }//method end
 
-   public static String encryption(String plaintext){
+   public static String encryption(String plaintext, String masterKey){
           //perform initial modifications on the text
           /*Commenting this out, since initial modifications will be performed on the main text in the Cipher chaining mode
            * for each 64 bit block of plain text and the ending plain text will be padded 
            */
             //plaintext = initialTextMut(plaintext);
+
+            keyGeneration(masterKey);
 
             //Perform initial Permutation
             plaintext = applyPermutation(plaintext, ip_table);
@@ -358,7 +360,9 @@ public class trial{
     return result.toString();
    }//method end
 
-   public static String decryption(String cipherText){
+   public static String decryption(String cipherText, String masterKey){
+
+            keyGeneration(masterKey);
             //Apply IP_1(Ip inverse) permutation 
             cipherText = applyPermutation(cipherText, ip_table);
             //System.out.println("\nCipher text after applying Initial permutation: "+cipherText);
@@ -394,7 +398,7 @@ public class trial{
             }
                         
             //Gemeration of keys method
-            keyGeneration(masterKey);
+            //keyGeneration(masterKey);
 
           //Enter the plain text to send to the client
             System.out.println("Enter 8 characters(plaintext): ");
@@ -407,14 +411,14 @@ public class trial{
             }//while end
 
             //perform encryption
-            String cipherText = encryption(plaintext);
+            String cipherText = encryption(plaintext, masterKey);
 
             System.out.println("The encrypted text is: " + cipherText);
 
             System.out.println("Decryption of the text: ");
 
             //Perform the decryption of cipherText
-            String decryptedText = decryption(cipherText);
+            String decryptedText = decryption(cipherText, masterKey);
             System.out.println("\nDecrypted text: " + decryptedText);
 
 

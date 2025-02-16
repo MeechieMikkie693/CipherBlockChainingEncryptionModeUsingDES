@@ -3,60 +3,71 @@ import java.net.*;
 import java.util.*;
 
 import DES_CBC.descbc;
-import destools.trial;
+//import destools.trial;
+import diffie_hellman.difhel;
 
-//Assuming that the server knows the master key used already
+//This is the Bob side server
 public class server {
+
+    //predefined alpha and q values, and are publicly known 
+    public static int q = 353, alpha = 3;
+
+    //Public key and private key of Alice user
+    public static int YBob, XBob;
     
     public static void main(String[] args){
-        int port = 8081; //port number where server listens
+        int port = 5001; //port number where server listens
 
         try(ServerSocket serverSocket = new ServerSocket(port)){
-            System.out.println("server is listening on port "+port);
+            System.out.println("Bob server is listening on port "+port);
 
-            //Wait for client connection
+            //Wait for client connection(Actually it is that Bloody Darth!!)
             Socket socket = serverSocket.accept();
-            System.out.println("Client is connected");
+            System.out.println("Client(MITM) is connected");
 
             //Create input and output Streams
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            //Assuming that the master key is already known. 
-            /* Please note!
-             * Use the same master key value as provided by the user in the client side
-             */
-            String masterKey = "EFGHHFGE";
-            trial.keyGeneration(masterKey);
+            //Get the pseudo public key of Alice from MITM
+            String YDA = in.readLine();
+            System.out.println("Pseudo public key of Alice(YDA) has been received from MITM...");
 
-            //Read message from client
-            String message = in.readLine();
-            //System.out.println("Encrypted message Received: "+ message);
+        //Ask the user to enter the private key
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter your(Bob)private key: ");
+        XBob = sc.nextInt();
 
-            System.out.println("Decryption of the text from the client...");
+        //Compute the public key of Bob
+        YBob = difhel.fastExponen(alpha, XBob, q);
+        out.println(YBob);
 
+        System.out.println("Sharing Bob Public key with pseudo Alice(MITM server)...");
 
-            //Measuring the time taken to decrypt the text
-            long startDecrypt = System.nanoTime();
-            //Apply decryption
-            String decryptedText = descbc.cbc_decrypt(message);
-            long endDecrypt = System.nanoTime();
-            System.out.println("The time taken to decrypt the same text (which was encrypted at the client side is): " + (endDecrypt - startDecrypt) + " ns");
-            System.out.println("\nDecrypted text: " + decryptedText);
+        //Send the public key of Bob to the MITM server
+        out.println(YBob);
+        
 
-            //Send response to client
-            Scanner sc = new Scanner(System.in);
-            System.out.println("Enter a response to send to the client: ");
-            
-          //Enter the plain text to send to the client
-            System.out.println("Enter 8 characters(plaintext): ");
-            String plaintext = sc.nextLine();
+        //Compute the common secret key between Bob and Darth
+        int K1 = difhel.fastExponen(Integer.parseInt(YDA), XBob, q);
 
-            //perform initial modifications on the text
-            String cipherText = descbc.cbc_Encrypt(plaintext);
-            //System.out.println("The encrypted text is: " + cipherText);
+        //Take the starting 8 bits of the secret key
+        String masterKey = Integer.toBinaryString(K1);
+        masterKey = String.format("%8s", masterKey).replace(' ', '0').substring(0, 8);
 
-            out.println(cipherText);
+        System.out.println("Master key: " + masterKey);
+
+        String message;
+        while((message = in.readLine()) != null){
+            System.out.println("Message from MITM server: " + descbc.cbc_decrypt(message, masterKey));
+
+            //Send response to MITM client
+            System.out.println("Enter a response to send to the pseudo client(MITM): ");
+            String response = sc.nextLine();
+            out.println(descbc.cbc_Encrypt(response, masterKey));
+
+        }//while end
+
 
             sc.close();
             in.close();
